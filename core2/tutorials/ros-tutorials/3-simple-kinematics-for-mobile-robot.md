@@ -85,6 +85,11 @@ Most common way to send movement commands to the robot is with use of
 `geometry_msgs/Twist` message type. Then motor driver node should use
 data stored in them to control the motor.
 
+The `geometry_msgs/Twist` message express velocity in free space and consists of two fields:
+* `Vector3 linear` - represents linear part of velocity [m/s]
+* `Vector3 angular` - represents angular part of velocity [rad/s]
+
+You will control ROSbot in the `x-y` plane by manipulating the `x` component of linear speed vector and the `z` component of angular speed vector. 
 ### Publishing the motion command for robot ###
 
 You will use keyboard to control the movement of your robot. For getting the
