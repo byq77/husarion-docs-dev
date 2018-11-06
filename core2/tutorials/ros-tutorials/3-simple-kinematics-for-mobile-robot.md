@@ -10,10 +10,12 @@ order: 3
 # Simple kinematics for mobile robot #
 
 
-## Forward kinematics task ##
+## A little bit of theory ##
+
+### Introduction ###
 
 The purpose of forward kinematics in mobile robotics is to determine robot
-position and orientation based on wheels rotation measurements. To achive that we'll create robot kinematic model. ROSbot is four wheeled mobile robot with separate drive for each wheel, but in order to simplify kinematic calculation we will treat it as two wheeled. Two virtual wheels (marked as W<sub>L</sub> and W<sub>R</sub> on the schematic) will have axis going through robot geometric center. This way wee can use simple kinematic model of differential wheeled robot. The name "differential" comes from the fact that robot can change its direction by varying the relative rate of rotation of its wheels and does not require additional steering motion. Robot schematic is presented below:
+position and orientation based on wheels rotation measurements. To achive that we'll create robot kinematic model. ROSbot is four wheeled mobile robot with separate drive for each wheel, but in order to simplify kinematic calculation we will treat it as two wheeled. Two virtual wheels (marked as W<sub>L</sub> and W<sub>R</sub> on the schematic) will have axis going through robot geometric center. This way wee can use simpler kinematic model of differential wheeled robot. The name "differential" comes from the fact that robot can change its direction by varying the relative rate of rotation of its wheels and does not require additional steering motion. Robot schematic is presented below:
 
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/robot_scheme.png" width="50%" height="50%"/></center></div>
 
@@ -33,38 +35,47 @@ Description:
 -   <div>l<sub>1</sub> - distance between robot centre and front/rear wheels</div>
 -   <div>l<sub>2</sub> - distance between robot left and right wheels</div>
 
-First we assume factual constraints of our robot - it can only move in `x-y` plane and has 3 DOF (degrees of freedom) and its position and orientation is determined by tuple (x<sub>c</sub>, y<sub>c</sub>, α). 
+Our mobile robot has constraints. It can only move in `x-y` plane and it has 3 DOF (degrees of freedom). However not all of DOFs are controllable which means robot cannot move in every direction of its local axes (e.g. it cannot move sideways). Such drive system is called **non-holonomic**. When amount of controllable DOFs is equal to total DOFs then a robot can be called **holonomic**. To achive that some mobile robots are built using Omni or Mecanum wheels and thanks to vectoring movement thay can change position without changing their heading (orientation). 
 
- In our case the angular speed ω and the angular position Φ of each virtual wheel will be an average of its real counterparts:
+### Forward Kinematics task ###
+
+The robot position is determined by a tuple (x<sub>c</sub>, y<sub>c</sub>, α). The forward kinematic task is to find new robot position (x<sub>c</sub>, y<sub>c</sub>, α)' 
+after time *δt* for given control parameters:
+* <div>v<sub>R</sub> - linear speed of right virtual wheel
+* <div>v<sub>L</sub> - linear speed of left virtual wheel
+
+In our case the angular speed ω and the angular position Φ of each virtual wheel will be an average of its real counterparts:
+
 <div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\phi_{W_L}=\frac{\phi_{W_{FL}}&plus;\phi_{W_{RL}}}{2}" title="\large \phi_{W_L}=\frac{\phi_{W_{FL}}+\phi_{W_{RL}}}{2}" /></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\phi_{W_R}=\frac{\phi_{W_{FR}}&plus;\phi_{W_{RR}}}{2}" title="\large \phi_{W_R}=\frac{\phi_{W_{FR}}+\phi_{W_{RR}}}{2}" /></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\omega_{W_L}=\frac{\omega_{W_{FL}}&plus;\omega_{W_{RL}}}{2}" title="\large \omega_{W_L}=\frac{\omega_{W_{FL}}+\omega_{W_{RL}}}{2}" /></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\omega_{W_R}=\frac{\omega_{W_{FR}}&plus;\omega_{W_{RR}}}{2}" title="\large \omega_{W_R}=\frac{\omega_{W_{FR}}+\omega_{W_{RR}}}{2}" /></center></div>
 
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_1.jpg" width="30%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_2.jpg" width="30%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_3.jpg" width="30%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_4.jpg" width="30%"/></center></div>
+Linear speed of each virtual wheel:
+
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\huge&space;v_{R}&space;=&space;\omega_{W_R}&space;\times&space;r" title="\huge \huge v_{R} = \omega_{W_R} \times r" /></div></center>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\huge&space;v_{L}&space;=&space;\omega_{W_L}&space;\times&space;r" title="\huge \huge v_{L} = \omega_{W_L} \times r" /></div></center>
+
+where *r* - the wheel radius.
 
 We can determine robot angular position and speed with:
 
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_2_1.jpg" width="30%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_2_2.jpg" width="12%"/></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\alpha&space;=&space;(\phi_{W_R}&space;-&space;\phi_{W_L})\frac{r}{l_2}" title="\huge \alpha = (\phi_{W_R} - \phi_{W_L})\frac{r}{l_2}" /></div></center>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\dot{\alpha}=\frac{d\alpha}{dt}" title="\huge \dot{\alpha}=\frac{d\alpha}{dt}" /></center></div>
 
+Then robot speed x and y component:
 
-Then robot linear speed x and y component:
-
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_3_1.jpg" width="40%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_3_2.jpg" width="40%"/></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\dot{x_c}=(v_L&space;&plus;&space;\dot{\alpha}\tfrac{l_2}{2})cos(\alpha)" title="\huge \dot{x_c}=(v_L + \dot{\alpha}\tfrac{l_2}{2})cos(\alpha)" /></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\dot{y_c}=(v_L&space;&plus;&space;\dot{\alpha}\tfrac{l_2}{2})sin(\alpha)" title="\huge \dot{y_c}=(v_L + \dot{\alpha}\tfrac{l_2}{2})sin(\alpha)" /></center></div>
 
 To get position:
 
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_4_1.jpg" width="17%"/></center></div>
-<div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_4_2.jpg" width="17%"/></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;x_c&space;=&space;\int_{0}^{t}\dot{x_c}\&space;dt" title="\huge x_c = \int_{0}^{t}\dot{x_c}\ dt" /></center></div>
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;y_c&space;=&space;\int_{0}^{t}\dot{y_c}\&space;dt" title="\huge y_c = \int_{0}^{t}\dot{y_c}\ dt" /></center></div>
 
-Using above equations you can perform forward kinematics task for mobile
-robot.
+We assume starting position as (0,0).
 
-<!-- change kinematic equations and descriptions -->
-
-We assume that wheels are connected to ports in following manner:
+In order for code to work correctly wheels should be connected to ports in following manner:
 
 -   <div>front left wheel (W<sub>FL</sub>) - hMot4</div>
 -   <div>front right wheel (W<sub>FR</sub>) - hMot1</div>
@@ -575,7 +586,7 @@ You should get something like this on your screen:
 ![image](/assets/img/ros/man_3_2.png)
 ### Data visualization with PlotJuggler ###
 
-In this section you will learn how to visualize data from topic using PlotJuggler. It is a simple tool that allows you to plot logged data, in particular timeseries. You can learn more about the tool on its [official webpage](https://github.com/facontidavide/PlotJuggler).
+In this section you will learn how to visualize data from ros topics using PlotJuggler. It is a simple tool that allows you to plot logged data, in particular timeseries. You can learn more about the tool on its [official webpage](https://github.com/facontidavide/PlotJuggler).
 
 #### Installation ####
 
@@ -602,7 +613,8 @@ Pressing **CTRL** and **SHIFT** select positions:
 * */pose/pose/position/x* 
 * */pose/pose/position/y*
 * */pose/pose/position/z*
-and then drag and drop them to window area. This way you can comfortably observe changes in odometry data during robot motion:
+
+and then drag and drop them to the window area. This way you can comfortably observe changes in the odometry data during robot motion:
 
 ![image](/assets/img/ros/man_3_7.png)
 
