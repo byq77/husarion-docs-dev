@@ -35,9 +35,8 @@ Description:
 
 First we assume factual constraints of our robot - it can only move in `x-y` plane and has 3 DOF (degrees of freedom) and its position and orientation is determined by tuple (x<sub>c</sub>, y<sub>c</sub>, α). 
 
- In our case the angular speed ω and the angular position Φ of each virtual wheels will be an average of their real counterparts:
-
-The position and speed is average for front and left wheel:
+ In our case the angular speed ω and the angular position Φ of each virtual wheel will be an average of its real counterparts:
+<div><center><img src="https://latex.codecogs.com/gif.latex?\bg_white&space;\huge&space;\phi_{W_L}=\frac{\phi_{W_{FL}}&plus;\phi_{W_{RL}}}{2}" title="\large \phi_{W_L}=\frac{\phi_{W_{FL}}+\phi_{W_{RL}}}{2}" /></center></div>
 
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_1.jpg" width="30%"/></center></div>
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_2.jpg" width="30%"/></center></div>
@@ -594,6 +593,18 @@ Start PlotJuggler:
 ```bash
 	$ rosrun plotjuggler PlotJuggler
 ```
+
+From menu bar select **Streaming > Start: ROS_Topic_Streamer**. In pop-up menu that will appear choose **/pose** from available topic names and press ok.
+
+![image](/assets/img/ros/man_3_6.png)
+
+Pressing **CTRL** and **SHIFT** select positions: 
+* */pose/pose/position/x* 
+* */pose/pose/position/y*
+* */pose/pose/position/z*
+and then drag and drop them to window area. This way you can comfortably observe changes in odometry data during robot motion:
+
+![image](/assets/img/ros/man_3_7.png)
 
 ## Robot visualization with Rviz ##
 
