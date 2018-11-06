@@ -13,40 +13,31 @@ order: 3
 ## Forward kinematics task ##
 
 The purpose of forward kinematics in mobile robotics is to determine robot
-position and orientation based on wheel rotation measurement. In this
-tutorial we will use four wheeled robot with separate drive for each
-wheel. Robot schematic is presented below:
+position and orientation based on wheels rotation measurements. To achive that we'll create robot kinematic model. ROSbot is four wheeled mobile robot with separate drive for each wheel, but in order to simplify kinematic calculation we will treat it as two wheeled. Two virtual wheels (marked as W<sub>L</sub> and W<sub>R</sub> on the schematic) will have axis going through robot geometric center. This way wee can use simple kinematic model of differential wheeled robot. The name "differential" comes from the fact that robot can change its direction by varying the relative rate of rotation of its wheels and does not require additional steering motion. Robot schematic is presented below:
 
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/robot_scheme.png" width="50%" height="50%"/></center></div>
 
-We will use the following symbols:
+Description:
 
--   <div>R<sub>C</sub> - robot geometric centre</div>
--   <div>x<sub>C</sub> - robot geometric centre x position</div>
--   <div>y<sub>C</sub> - robot geometric centre y position</div>
--   <div>x<sub>C</sub> - robot geometric centre x speed</div>
--   <div>y<sub>C</sub> - robot geometric centre y speed</div>
--   <div>x<sub>r</sub> - robot x axis, points front of robot</div>
+-   <div>R<sub>c</sub> - robot geometric centre</div>
+-   <div>x<sub>c</sub> - robot geometric centre x position</div>
+-   <div>y<sub>c</sub> - robot geometric centre y position</div>
+-   <div>x<sub>r</sub> - robot local x axis that determines front of the robot</div>
 -   α - robot angular position
--   α′- robot angular speed
 -   <div>W<sub>FL</sub> - front left wheel</div>
 -   <div>W<sub>FR</sub> - front right wheel</div>
 -   <div>W<sub>RL</sub> - rear left wheel</div>
 -   <div>W<sub>RR</sub> - rear right wheel</div>
--   <div>W<sub>L</sub> - middle left wheel</div>
--   <div>W<sub>R</sub> - middle right wheel</div>
+-   <div>W<sub>L</sub> - virtual left wheel</div>
+-   <div>W<sub>R</sub> - virtual right wheel</div>
 -   <div>l<sub>1</sub> - distance between robot centre and front/rear wheels</div>
 -   <div>l<sub>2</sub> - distance between robot left and right wheels</div>
--   v - linear speed
--   Φ - wheel angular position
--   ω - wheel angular speed
--   r - wheel radius
 
-To determine robot position we need a robot kinematic model. It is much
-easier to calculate position for two wheeled robot with rotation centre
-between them. We can simplify our four wheeled robot to this model by
-adding two virtual wheels (marked as W<sub>L</sub> and W<sub>R</sub> on the schematic).
-Their speed and position will be average for front and left wheel:
+First we assume factual constraints of our robot - it can only move in `x-y` plane and has 3 DOF (degrees of freedom) and its position and orientation is determined by tuple (x<sub>c</sub>, y<sub>c</sub>, α). 
+
+ In our case the angular speed ω and the angular position Φ of each virtual wheels will be an average of their real counterparts:
+
+The position and speed is average for front and left wheel:
 
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_1.jpg" width="30%"/></center></div>
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_1_2.jpg" width="30%"/></center></div>
@@ -59,7 +50,7 @@ We can determine robot angular position and speed with:
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_2_2.jpg" width="12%"/></center></div>
 
 
-Then robot x and y speed component:
+Then robot linear speed x and y component:
 
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_3_1.jpg" width="40%"/></center></div>
 <div><center><img src="https://raw.githubusercontent.com/husarion/static_docs/master/src/assets/img/ros/man_3_formula_3_2.jpg" width="40%"/></center></div>
@@ -71,6 +62,8 @@ To get position:
 
 Using above equations you can perform forward kinematics task for mobile
 robot.
+
+<!-- change kinematic equations and descriptions -->
 
 We assume that wheels are connected to ports in following manner:
 
@@ -581,6 +574,26 @@ Remember, that you need to have active window with `teleop_twist_keyboard` to co
 You should get something like this on your screen:
 
 ![image](/assets/img/ros/man_3_2.png)
+### Data visualization with PlotJuggler ###
+
+In this section you will learn how to visualize data from topic using PlotJuggler. It is a simple tool that allows you to plot logged data, in particular timeseries. You can learn more about the tool on its [official webpage](https://github.com/facontidavide/PlotJuggler).
+
+#### Installation ####
+
+Run following commands:
+
+```bash
+	$ sudo apt-get update
+	$ sudo apt-get install ros-kinetic-plotjuggler 
+```
+
+#### How to use ####
+
+Start PlotJuggler:
+
+```bash
+	$ rosrun plotjuggler PlotJuggler
+```
 
 ## Robot visualization with Rviz ##
 
