@@ -11,7 +11,9 @@ order: 9
 
 ## Introduction ##
 
-Object search task defines a mission in which robot has to explore environment while observing if given object exists in explored area. For this purpose it is necessary to use two different approaches, one for exploration and second for object recognition. In prevoius tutorial we already discussed object environment exploration and object recognition as separate tasks. Beside launching them together, it is necessary to keep track of which obstacles were checked by the object recognition process. Task is considered as finished when object is succesfully recognized or all abstacles were checked with no object detection.
+Object search task defines a mission in which robot has to explore environment while observing if given object exists in explored area. For this purpose it is necessary to use two different approaches, one for exploration and second for object recognition. In prevoius tutorial we already discussed object environment exploration and object recognition as separate tasks. Beside launching them together, it is necessary to keep track of which obstacles were checked by the object recognition process. Task is considered as finished when object is succesfully recognized or all obstacles were checked with no object detection.
+
+![image](/assets/img/ros/man_9_find_object_2d.png)
 
 ## Object search in ROS ##
 
@@ -40,6 +42,8 @@ Before continuing with object detection task certain requirements must be met, r
 ### System architecture
 
 Our search system will consist of many cooperating ROS nodes, before we start configuring them, we need to specify overall data flow and principle of operation. For performing the search task we will use two main sensors, this will be laser scanner and RGB-D camera. Laser scanner will be used for robot localization and mapping, RDB-D camera will be used for object detection. The key role of the system will be played by our own node, we will name it `search_manager`, this node will be controlling state of other tasks like exploration or path planning. Furhtermore, `search_manager` will keep track of found obstacles and which of them were checked, for this, it will need to subscribe `/map` from `gmapping`, `/objects` from `find_object_2d` and `proj_scan` containing `sensor_msgs/LaserScan` projected from depth image.
+
+![image](/assets/img/ros/man_9_rqt_graph.png)
 
 Due to the fact that all computations would be exccesive load for SBC in the robot, some of the tasks will be moved to other computer.
 
@@ -1370,22 +1374,10 @@ For Gazebo you can use below `launch` file:
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
 
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find rosbot_gazebo)/worlds/search.world"/>
-        <arg name="paused" value="$(arg paused)"/>
-        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
-        <arg name="gui" value="$(arg gui)"/>
-        <arg name="headless" value="$(arg headless)"/>
-        <arg name="debug" value="$(arg debug)"/>
-    </include>
-
-    <param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
-
-    <node name="rosbot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -param robot_description -model rosbot" />
+    <include file="$(find rosbot_gazebo)/launch/search_world.launch"/>
+    <include file="$(find rosbot_gazebo)/launch/rosbot.launch"/>
 
     <node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0.019 0 0 3.14 0 0 base_link laser 100" />
-
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
 
     <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" required="true">
         <remap from="/image" to="/camera/depth/image_raw"/>
@@ -1413,7 +1405,7 @@ For Gazebo you can use below `launch` file:
     </node>
 
     <node pkg="move_base" type="move_base" name="move_base" output="screen">
-        <param name="controller_frequency" value="5.0"/>
+        <param name="controller_frequency" value="10.0"/>
         <rosparam file="$(find rosbot_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find rosbot_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
         <rosparam file="$(find rosbot_navigation)/config/local_costmap_params.yaml" command="load" />
@@ -1447,7 +1439,7 @@ For Gazebo you can use below `launch` file:
 
 </launch>
 ```
-
+![image](/assets/img/ros/man_9_gazebo.png)
 
 #### ROSbot version
 
@@ -1545,6 +1537,22 @@ And second to be run on another device:
 
 </launch>
 ```
+
+### Observing the progresses ###
+
+Object search progresses are published as `nav_msgs/OccupancyGrid`, obstacles that are detected by mapping node and waiting to be checked are published on `/obstacles/pending` topic and obstacles that were already inspected are published on `/obstacles/checked`.
+
+To view them in Rviz add objects:
+
+-   `/obstacles/pending/Map`
+
+-   `/obstacles/checked/Map` - for this one chenge `Color Scheme` to `costmap`, it will be easier to distinguish maps
+
+-   `/proj_scan/LaserScan` - these are obstacles observed by the camera
+
+-   From menu "Add" -> "By display type" choose "Robot model" - this will let you see where robot travelled
+
+![image](/assets/img/ros/man_9_rviz.png)
 
 ## Summary ##
 
