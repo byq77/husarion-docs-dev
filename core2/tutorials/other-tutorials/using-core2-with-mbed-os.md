@@ -17,14 +17,16 @@ order: 5
 
 **Mbed OS** is free, open-source platform and embedded operating system designed for IoT devices based on Arm Cortex-M family of microcontrollers. It is developed as collaborative project by *Arm*, its partners and growing community of individual devs from across the world. Mbed OS is distributed under the [Apache-2.0 License](https://en.wikipedia.org/wiki/Apache_License) and it's available on project's GitHub page : https://github.com/ARMmbed/mbed-os.
 
-Besides support for hundreds of boards from different manufacturers the framework has following features:
+Besides support for variety of boards from different manufacturers the framework has the following features:
 * built-in support for connectivity options like *Bluetooth LE*, *Wi-Fi*, *Ethernet*, *Cellular*, *LoRa LPWAN*, *NFC* and others,
 * RTOS core based on open-source *CMSIS-RTOS RTX* (it is also possible to build projects without it),
 * Hardware Enforced and Communications Security.
 
 You can learn more about Mbed OS on its [official webpage](https://www.mbed.com/en/platform/mbed-os/).
 
-## Project Template
+## CORE2 and Mbed OS
+
+In this tutorial you will learn how to build, compile and run mbed applications on CORE2 using offline tools.  
 
 ## Motor project
 
