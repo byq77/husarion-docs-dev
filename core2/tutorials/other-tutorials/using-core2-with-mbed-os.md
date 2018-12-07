@@ -20,13 +20,63 @@ order: 5
 Besides support for variety of boards from different manufacturers the framework has the following features:
 * built-in support for connectivity options like *Bluetooth LE*, *Wi-Fi*, *Ethernet*, *Cellular*, *LoRa LPWAN*, *NFC* and others,
 * RTOS core based on open-source *CMSIS-RTOS RTX* (it is also possible to build projects without it),
-* Hardware Enforced and Communications Security.
+* *Hardware Enforced Security* and *Communications Security*.
 
 You can learn more about Mbed OS on its [official webpage](https://www.mbed.com/en/platform/mbed-os/).
 
 ## CORE2 and Mbed OS
 
-In this tutorial you will learn how to build, compile and run mbed applications on CORE2 using offline tools.  
+In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to mbed API, learn how to use rosserial library to connect your mbed application with SBC and more. Let's hack ;-)
+
+### Prerequisites
+
+#### Hardware
+
+You will need *ST-LINK V2 programmer* to flash CORE2 with mbed firmware.
+
+#### Software
+
+Before we start make sure you have following tools installed on your system:
+
+* [Visual Studio Code IDE](https://code.visualstudio.com/)
+* [GNU Arm Embedded version 6 toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads)
+* [STM32 ST-LINK Utility](https://www.st.com/en/development-tools/stsw-link004.html) (Windows only)
+* [stlink flasher](https://github.com/texane/stlink/blob/master/README.md) (Mac or Linux)
+
+You can check our tutorial: [2. Offline development tools](https://husarion.com/core2/tutorials/other-tutorials/offline-development-tools) to find information on stlink flasher and VS Code IDE installation and configuration. 
+
+Everything up and ready? Proceed to the next step then.
+
+### mbed-cli installation
+
+`mbed-cli` is a package name of **Arm Mbed CLI**, a command-line tool that enables use of Mbed build system, GIT/Mercurial-based version control, dependencies management and so on. Check it [GitHub page](https://github.com/ARMmbed/mbed-cli) to learn more about the tool. 
+
+Official mbed documentation provides tutorial on mbed-cli installation. You can access it [here](https://os.mbed.com/docs/v5.10/tools/installation-and-setup.html).
+It provides installers for both Windows and macOS. Linux users will need to install the tool manually.
+
+To check if installation was successful open terminal and run:
+
+```bash
+    $ mbed --version
+    1.8.3
+```
+
+After installation you have to inform Mbed CLI about location of compiler (in our case GCC Arm Embedded Compiler ). We will use global setting. Run:
+
+```bash
+    $mbed config -G GCC_ARM_PATH <path to compiler>
+```
+
+Example for Linux:
+
+
+```
+$ where arm-none-eabi-gcc # prints path to arm-none-eabi-gcc.exe if in PATH
+$ mbed config -G GCC_ARM_PATH "C:\Program Files (x86)\GNU Tools ARM Embedded\6 2017-q2-update\bin" # configure path for mbed-cli
+$ mbed config --list # check configuration
+```
+
+$ mbed 
 
 ## Motor project
 
