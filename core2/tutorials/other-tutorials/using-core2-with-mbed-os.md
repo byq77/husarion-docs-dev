@@ -17,16 +17,21 @@ order: 5
 
 **Mbed OS** is free, open-source platform and embedded operating system designed for IoT devices based on Arm Cortex-M family of microcontrollers. It is developed as collaborative project by *Arm*, its partners and growing community of individual devs from across the world. Mbed OS is distributed under the [Apache-2.0 License](https://en.wikipedia.org/wiki/Apache_License) and it's available on project's GitHub page : https://github.com/ARMmbed/mbed-os.
 
-Besides support for variety of boards from different manufacturers the framework has the following features:
+Besides support for variety of boards from different manufacturers the framework has features like:
 * built-in support for connectivity options like *Bluetooth LE*, *Wi-Fi*, *Ethernet*, *Cellular*, *LoRa LPWAN*, *NFC* and others,
 * RTOS core based on open-source *CMSIS-RTOS RTX* (it is also possible to build projects without it),
-* *Hardware Enforced Security* and *Communications Security*.
+* *Hardware Enforced Security* and *Communications Security*,
+* easy and portable API.
 
 You can learn more about Mbed OS on its [official webpage](https://www.mbed.com/en/platform/mbed-os/).
 
+Useful links:
+* [Mbed OS documentation](https://os.mbed.com/docs/v5.10/)
+* [Mbed OS Doxygen API](https://os.mbed.com/docs/v5.10/mbed-os-api-doxy/modules.html)
+
 ## CORE2 and Mbed OS
 
-In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to mbed API, learn how to use rosserial library to connect your mbed application with SBC and more. Let's hack ;-)
+In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to basics of mbed API, learn how to use rosserial library to connect your mbed application with SBC and more. Let's hack!
 
 ### Prerequisites
 
@@ -161,13 +166,76 @@ You can also clone the repo using GIT:
     $ git clone https://github.com/byq77/core2-mbed-template.git
 ```
 
-Open `core2-mbed-template-master` directory in Visual Studio Code. You should see:
+Open `core2-mbed-template-master` directory in Visual Studio Code. In file `setting.json` from directory `.vscode` change the value of `C_cpp.default.compilerPath` to match location of `arm-none-eabi-gcc` on your system:
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img2.png" width="800px" alt=""/></center>
+</div> 
+
+It will enable more accurate IntelliSense feature in editor.
+
+#### Template files
+
+Open the template directory and select `src/main.cpp`. You should see:
 
 <div>
 <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img1.png" width="800px" alt=""/></center>
-</div>
+</div> 
 
-## Rosserial project
+As you no doubt have guessed this simple code just lights up three on-board leds in some sequence. We instantiate `BusOut` object that allows to control multiple digital pins at the same time. It's used to blink leds in order described by `leds_mask` array at the interval introduced by function `ThisThread::sleep_for(1000)`.    
+
+Let's explore other important files of template project. Open file `custom_target.json`:
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img3.png" width="800px" alt=""/></center>
+</div> 
+
+Mbed OS Configuration system use this file to define user's custom targets. Since CORE2 is not officially supported by Mbed OS `custom_target.json` and files from `TARGET_CORE2` are used to describe our board. You can learn more about configuration system [here](https://os.mbed.com/docs/v5.10/reference/configuration.html).
+
+In folder `TARGET_CORE2` you can find files `PinNames.h` and `PeripheralPins.c`. First defines pin names of mcu and the latter declares all peripherals that can be used on those pins.
+
+Another file that is used by Mbed OS configuration system is `mbed_app.json`. Open it.
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img4.png" width="800px" alt=""/></center>
+</div> 
+
+In this file you can override default settings for application, define new configuration entries and create custom macros. In presented configuration :
+* line `10` enables spawning a new thread for shared event queue, 
+* lines `11` and `12` set default baudrate to 115200,
+* line `13` shifts the start of firmware in flash so it doesn't override bootloader.   
+
+You can learn details of each settings from documentation.
+
+The last important file you should be aware of is `task.json` from `.vscode` directory. It defines tasks that are recognized by Visual Studio Code IDE. They can be accessed by pressing `CTRL + SHIFT + P` and typing `Task: Run Task` in Command Pallete.
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img5.png" width="800px" alt=""/></center>
+</div> 
+
+Both Mbed OS and VS Code configuration use simple JSON syntax. 
+
+#### Building and flashing firmware
+
+Press `CTRL + SHIFT + B`. It will run `CLEAN BUILD (RELEASE)` task. Wait until compilation finishes.
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img6.png" width="800px" alt=""/></center>
+</div> 
+
+Connect your ST-LINK programmer to debug pins of CORE2 and make sure it's connected to your computer. Press `CTRL + SHIFT + P` and in Command Pallete type `Task: Run Task`. Select `FLASH FIRMWARE (RELEASE)`. You should get:
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img7.png" width="800px" alt=""/></center>
+</div> 
+
+Leds on your board should start blinking accordingly. Congratulations! You've just build and flashed your first Mbed application for CORE2!
+
+> **Additional Task**
+> 
+> Modify the program so as the on-board leds blink in Gray code. Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout at the same time.  
+
+## Rosserial library
 
 ## Summary
 
