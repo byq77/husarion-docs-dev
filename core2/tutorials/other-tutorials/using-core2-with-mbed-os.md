@@ -231,17 +231,21 @@ Connect your ST-LINK programmer to debug pins of CORE2 and make sure it's connec
 
 Leds on your board should start blinking accordingly. Congratulations! You've just build and flashed your first Mbed application for CORE2!
 
-> **Task**
-> 
-> Modify the program so as the on-board leds blink in Gray code. Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout (micro-usb port on CORE2) at the same time. Change boudrate to 38400 in configuration files. Check target's files and learn which UART instance is connected to pins `USBTX` and `USBRX`.    
+> **Tasks**
+> - Modify the program so as the on-board leds blink in Gray code. 
+> - Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout (micro-usb port on CORE2) at the same time. 
+> - Change baudrate to 38400 in configuration files. 
+> - Check target's files and learn which UART instance is connected to pins `USBTX` and `USBRX`.    
 
 ## Rosserial library
+
+//TODO Fill this section
 
 ## Summary
 
 After completing this tutorial you should know the basics of Mbed OS 
-components and tools. You should know how to create, compile and run mbed 
-applications on CORE2 and you should be able to establish ROS communication
+components and tools. You should be able to create, compile and run mbed 
+applications on CORE2 and you should have the basic idea how to establish ROS communication
 between mbed program and SBC using Rosserial library.
 
 ---------
