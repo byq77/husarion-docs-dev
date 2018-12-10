@@ -31,7 +31,7 @@ Useful links:
 
 ## CORE2 and Mbed OS
 
-In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to basics of mbed API, learn how to use rosserial library to connect your mbed application with SBC and more. Let's hack!
+In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to basics of mbed API, learn how to use Rosserial library to connect your mbed application with SBC and more. Let's hack!
 
 ### Prerequisites
 
@@ -124,7 +124,7 @@ Example:
 
 #### Adding .mbedignore
 
-In order to add support for CORE2 target and speed-up building of your project we will exclude certain folders of `mbed-os` library from compilation. For this purpose Mbed build system provides `.mbedignore` files. They have similar structure to `.gitignore` files used by GIT.
+In order to add support for CORE2 target and speed-up building of your projects we will exclude certain folders of `mbed-os` library from compilation. For this purpose Mbed build system provides `.mbedignore` files. They have similar structure to `.gitignore` files used by GIT.
 
 In your local `mbed-os` library directory create a new file and name it `.mbedignore`. Open it and add following lines:
 
@@ -192,7 +192,7 @@ Let's explore other important files of template project. Open file `custom_targe
 
 Mbed OS Configuration system use this file to define user's custom targets. Since CORE2 is not officially supported by Mbed OS `custom_target.json` and files from `TARGET_CORE2` are used to describe our board. You can learn more about configuration system [here](https://os.mbed.com/docs/v5.10/reference/configuration.html).
 
-In folder `TARGET_CORE2` you can find files `PinNames.h` and `PeripheralPins.c`. First defines pin names of mcu and the latter declares all peripherals that can be used on those pins.
+In folder `TARGET_CORE2` you can find files `PinNames.h` and `PeripheralPins.c`. First one defines pin names of mcu and the latter defines peripherals that can be used on each pin.
 
 Another file that is used by Mbed OS configuration system is `mbed_app.json`. Open it.
 
@@ -242,7 +242,8 @@ Leds on your board should start blinking accordingly. Congratulations! You've ju
 After completing this tutorial you should know the basics of Mbed OS 
 components and tools. You should know how to create, compile and run mbed 
 applications on CORE2 and you should be able to establish ROS communication
-between mbed program and SBC.
+between mbed program and SBC using Rosserial library.
+
 ---------
 
 *by Szymon Szantula, Husarion*
