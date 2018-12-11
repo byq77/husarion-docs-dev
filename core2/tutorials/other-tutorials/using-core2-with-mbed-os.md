@@ -29,15 +29,16 @@ Useful links:
 * [Mbed OS documentation](https://os.mbed.com/docs/v5.10/)
 * [Mbed OS Doxygen API](https://os.mbed.com/docs/v5.10/mbed-os-api-doxy/modules.html)
 
-## CORE2 and Mbed OS
+## First Steps
 
-In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to basics of mbed API, learn how to use Rosserial library to connect your mbed application with SBC and more. Let's hack!
+In this tutorial we will show you how to build, compile and run mbed applications on CORE2 using mbed offline tools. You will be introduced to basics of mbed API, learn how to use rosserial library to connect your mbed application with SBC and more. Let's hack!
 
 ### Prerequisites
 
 #### Hardware
 
-You will need *ST-LINK V2 programmer* to flash CORE2 with mbed firmware.
+* CORE2-ROS (with SBC) or CORE2 and computer running Linux with ROS Kinetic,   
+* *ST-LINK V2 programmer* to flash CORE2 with mbed firmware,
 
 #### Software
 
@@ -231,6 +232,10 @@ Connect your ST-LINK programmer to debug pins of CORE2 and make sure it's connec
 
 Leds on your board should start blinking accordingly. Congratulations! You've just build and flashed your first Mbed application for CORE2!
 
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-animation.gif" alt="result"/></center>
+</div> 
+
 > **Tasks**
 > - Modify the program so as the on-board leds blink in Gray code. 
 > - Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout (micro-usb port on CORE2) at the same time. 
@@ -239,7 +244,7 @@ Leds on your board should start blinking accordingly. Congratulations! You've ju
 
 ## Rosserial library
 
-//TODO Fill this section
+If you made it this far you must be really into this stuff! Let's do something more interesting.  
 
 ## Summary
 
