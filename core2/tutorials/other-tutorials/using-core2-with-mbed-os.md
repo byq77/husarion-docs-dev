@@ -140,6 +140,7 @@ features/nanostack/*
 features/netsocket/*
 features/nfc/*
 features/unsupported/*
+features/storage/*
 components/wifi/*
 components/802.15.4_RF/*
 components/storage/*
@@ -167,7 +168,7 @@ You can also clone the repo using GIT:
     $ git clone https://github.com/byq77/core2-mbed-template.git
 ```
 
-Open `core2-mbed-template-master` directory in Visual Studio Code. In file `setting.json` from directory `.vscode` change the value of `C_cpp.default.compilerPath` to match location of `arm-none-eabi-gcc` on your system:
+Open the directory in Visual Studio Code. In file `setting.json` from directory `.vscode` change the value of `C_cpp.default.compilerPath` to match location of `arm-none-eabi-gcc` on your system:
 
 <div>
 <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img2.png" width="800px" alt=""/></center>
@@ -244,7 +245,36 @@ Leds on your board should start blinking accordingly. Congratulations! You've ju
 
 ## Rosserial library
 
-If you made it this far you must be really into this stuff! Let's do something more interesting.  
+If you made it this far you must be really into this stuff! Let's do something more interesting. We will use `rosserial-mbed` library to talk to SBC with ROS.  
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/ros_logo.png" alt="result"/></center>
+</div> 
+
+### Example publisher
+
+First we will create a new project directory. Just simply duplicate previous project and name it `example-publisher`:
+
+```bash
+    $ cp -rf core2-mbed-template example-publisher
+```
+
+Open `example-publisher` directory in Visual Studio Code. In the program press `CTRL + ~` to open built-in terminal. In the terminal type:
+
+```bash
+    $ cd lib 
+    $ mbed add https://github.com/byq77/rosserial-mbed
+```
+
+This will add `rosserial-mbed` library to your project and download all library's dependencies. Managing libraries this way is simple:
+* `mbed add <library-url>` - adds library to project,
+* `mbed remove <library-name>` - removes library from project.
+
+
+
+### Example subscriber
+
+## Motors
 
 ## Summary
 
