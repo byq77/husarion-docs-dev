@@ -356,6 +356,15 @@ If you would like to know more about mbed specific code check [Mbed API](https:/
 * [Ticker](https://os.mbed.com/docs/v5.10/apis/ticker.html),
 * [DigitalOut](https://os.mbed.com/docs/v5.10/apis/digitalout.html).
 
+> **Pro Tip**
+>
+> Good practice when learning new things is to take notes. These days it's even more relevant than ever due to our over-reliance on google. You sometimes end up searching for the same information over and over again just because you've already forgotten it. 
+> We encourage you to create "cheat sheets" when learning new programming language or framework/API. They help quickly revise and reuse code.   Create "Mbed cheat sheet" using GitHub Gist or note in Evernote. At the beginning add links to main documentation pages and another useful sites on topic. In next sections make short references to API with code snippets. It may look like this:
+> 
+> <div>
+> <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img9.png" width="800px" alt="Cheat sheet in Marxi.co"/></center>
+> </div> 
+
 #### Running the code
 
 To get the application working we need to configure library's serial pins and baudrate. You can check default values in `rosserial-lib/mbed_lib.json`. If you use CORE2 with SBC connected to RPI connector, add this lines to your `mbed_app.json` file under `target_overrides.CORE2` object:
@@ -404,25 +413,21 @@ After reboot open terminal and and in first tab run `roscore`. Press `CTRL + SHI
     $ rosrun rosserial_python serial_node.py _port:=/dev/ttyS1 _baud:=115200
 ```
 
-This application forwards your MBED messages to rest of ROS. In next tab watch your communication:
+This application forwards your MBED messages to rest of ROS. 
+
+Run in next tab to see communication on "mbed_device" topic:
 ```bash
     $ rostopic echo mbed_device
 ```
 
-<!-- add image -->
-
-
-
-> **Pro Tip**
->
-> Good practice when learning new things is to take notes. These days it's even more relevant than ever due to our over-reliance on google. You sometimes end up searching for the same information over and over again just because you've already forgotten it. 
-> We encourage you to create "cheat sheets" when learning new programming language or framework/API. They help quickly revise and reuse code.   Create "Mbed cheat sheet" using GitHub Gist or note in Evernote. At the beginning add links to main documentation pages and another useful sites on topic. In next sections make short references to API with code snippets. It may look like this:
-> 
-> <div>
-> <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img9.png" width="800px" alt="Cheat sheet in Marxi.co"/></center>
-> </div> 
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img11.png" width="800px" alt=""/></center> 
+</div> 
  
 ### Example subscriber
+
+ 
+
 
 ## Motors
 
