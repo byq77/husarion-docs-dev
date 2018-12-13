@@ -58,7 +58,7 @@ Everything up and ready? Proceed to the next step then.
 `mbed-cli` is a package name of **Arm Mbed CLI**, a command-line tool that enables use of Mbed build system, GIT/Mercurial-based version control, dependencies management and so on. Check [Mbed CLI GitHub page](https://github.com/ARMmbed/mbed-cli) or [Mbed documentation](https://os.mbed.com/docs/v5.10/tools/developing-mbed-cli.html) to learn more about the tool.  
 
 Official documentation provides tutorial on mbed-cli installation. You can access it [here](https://os.mbed.com/docs/v5.10/tools/installation-and-setup.html).
-Installers for both Windows and macOS are provided. Linux users have to install tool manually.  
+Installers for both Windows and macOS are provided. Linux users have to install tool manually. In case you are user of the latter system check if you have both Git and Mercurial installed before you start. See [Requirements](https://os.mbed.com/docs/v5.10/tools/requirements.html) page for more details.
 
 To check if installation was successful open terminal and run:
 
@@ -237,15 +237,15 @@ Leds on your board should start blinking accordingly. Congratulations! You've ju
 <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-animation.gif" alt="result"/></center>
 </div> 
 
-> **Tasks**
-> - Modify the program so as the on-board leds blink in Gray code. 
-> - Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout (micro-usb port on CORE2) at the same time. 
-> - Change baudrate to 38400 in configuration files. 
-> - Check target's files and learn which UART instance is connected to pins `USBTX` and `USBRX`.    
+#### Tasks
+- Modify the program so as the on-board leds blink in Gray code. 
+- Add [Serial](https://os.mbed.com/docs/v5.10/apis/serial.html) to print current sequence to the stdout (micro-usb port on CORE2) at the same time. 
+- Change baudrate to 38400 in configuration files. 
+- Check target's files and learn which UART instance is connected to pins `USBTX` and `USBRX`.    
 
 ## Rosserial library
 
-If you made it this far you must be really into this stuff! Let's do something more interesting. We will use `rosserial-mbed` library to talk to SBC with ROS.  
+If you made it this far you must be really into this stuff! Let's do something more interesting and learn how to communicate with devices running ROS using mbed. For this purpose we will use [rosserial for mbed platforms](http://wiki.ros.org/rosserial_mbed). 
 
 <div>
 <center><img src="./../../../assets/img/mbed-tutorials/ros_logo.png" alt="result"/></center>
@@ -270,8 +270,158 @@ This will add `rosserial-mbed` library to your project and download all library'
 * `mbed add <library-url>` - adds library to project,
 * `mbed remove <library-name>` - removes library from project.
 
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img8.png" width="800px" alt=""/></center>
+</div> 
+
+#### The code
+
+Take a minute to analyze the program below. We provided you with comments to make it easier. 
+
+```cpp
+/*
+ * main.cpp
+ */ 
+#include <mbed.h>
+#include <Thread.h>
+
+// This header file must be included before any other 
+// ros header files.
+#include <ros.h> 
+#include <std_msgs/String.h>
+
+// DigitalOut objects for controlling on-board leds.
+DigitalOut led1(LED1,0), led2(LED2,1), ros_led(LED3,0);
+
+// Thread object for controlling ros task. Feature of RTOS.
+Thread ros_thread;
+
+// Ticker object for controlling reoccurring interrupt 
+// that calls attached callback at given rate.  
+Ticker blinker;
+
+// Node handle instantiation - required for registering publishers, subscribers
+// and handling serial communication.
+ros::NodeHandle  nh;
+
+static const char * messages[] = {
+    "mbed V5.10", "CORE2", "MCU", "STM32F407ZG", 
+};
+
+int main()
+{
+    // We use lambda style callback for registering a ros task
+    ros_thread.start([]()->void{
+        std_msgs::String str_msg;
+        
+        // Instantiate Publisher object with topic name "mbed device".
+        // Second parameter is reference to instance of object that
+        // will be used in communication.
+        ros::Publisher mbed_device("mbed_device", &str_msg);
+
+        // Initialize node and advertise our custom topic. 
+        nh.initNode();
+        nh.advertise(mbed_device);
+
+        int i=0, n = sizeof(messages)/sizeof(messages[0]);
+
+        while(1)
+        {
+            ros_led = !ros_led;
+            str_msg.data = messages[i%n];
+
+            // publish message to topic
+            mbed_device.publish(&str_msg);
+            i++;
+
+            // process all messages
+            nh.spinOnce();
+
+            ThisThread::sleep_for(1000);
+        }
+    });
+
+    // We attach lambda style callback to blink on-board leds
+    // every 2 seconds.
+    blinker.attach([]()->void{
+        led1 = !led1;
+        led2 = !led2;
+    },2.0);
+}
+```
+As you can see the program is pretty straightforward. It creates topic "device_mbed" and publishes messages to it blinking board's leds at the same time. 
+
+If you would like to know more about mbed specific code check [Mbed API](https://os.mbed.com/docs/v5.10/apis/index.html) :
+* [Thread](https://os.mbed.com/docs/v5.10/apis/thread.html),
+* [Ticker](https://os.mbed.com/docs/v5.10/apis/ticker.html),
+* [DigitalOut](https://os.mbed.com/docs/v5.10/apis/digitalout.html).
+
+#### Running the code
+
+To get the application working we need to configure library's serial pins and baudrate. You can check default values in `rosserial-lib/mbed_lib.json`. If you use CORE2 with SBC connected to RPI connector, add this lines to your `mbed_app.json` file under `target_overrides.CORE2` object:
+
+```json
+"rosserial-mbed.tx_pin": "RPI_SERIAL_TX",
+"rosserial-mbed.rx_pin": "RPI_SERIAL_RX",
+"rosserial-mbed.baudrate": "115200"
+```
+
+Your `mbed_app.json` file should look like this:
+```json
+{
+    "config": {},
+    "macros": [],
+    "target_overrides": {
+        "CORE2": {
+            "events.shared-dispatch-from-application": 0,
+            "platform.default-serial-baud-rate": 115200,
+            "platform.stdio-baud-rate": 115200,
+            "target.mbed_app_start": "0x08010000",
+            "rosserial-mbed.tx_pin": "RPI_SERIAL_TX",
+            "rosserial-mbed.rx_pin": "RPI_SERIAL_RX",
+            "rosserial-mbed.baudrate": "115200"
+        }
+    }
+}
+```
+Now you can compile the project and flash it to your board. To view communication on your SBC you must disable Husarion Cloud, which is not currently supported by our mbed template firmware. You can enable it at any moment.
+
+In terminal type:
+```bash
+    $ systemctl disable husarnet-configurator
+    $ sudo shutdown -r now # it will reboot your SBC
+```
+
+After reboot open terminal and and in first tab run `roscore`. Press `CTRL + SHIFT + T` and in second tab run:
+
+* Raspberry PI
+```bash
+    $ rosrun rosserial_python serial_node.py _port:=/dev/serial0 _baud:=115200
+```
+
+* Asus Tinker Board
+```bash
+    $ rosrun rosserial_python serial_node.py _port:=/dev/ttyS1 _baud:=115200
+```
+
+This application forwards your MBED messages to rest of ROS. In next tab watch your communication:
+```bash
+    $ rostopic echo mbed_device
+```
+
+<!-- add image -->
 
 
+
+> **Pro Tip**
+>
+> Good practice when learning new things is to take notes. These days it's even more relevant than ever due to our over-reliance on google. You sometimes end up searching for the same information over and over again just because you've already forgotten it. 
+> We encourage you to create "cheat sheets" when learning new programming language or framework/API. They help quickly revise and reuse code.   Create "Mbed cheat sheet" using GitHub Gist or note in Evernote. At the beginning add links to main documentation pages and another useful sites on topic. In next sections make short references to API with code snippets. It may look like this:
+> 
+> <div>
+> <center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img9.png" width="800px" alt="Cheat sheet in Marxi.co"/></center>
+> </div> 
+ 
 ### Example subscriber
 
 ## Motors
