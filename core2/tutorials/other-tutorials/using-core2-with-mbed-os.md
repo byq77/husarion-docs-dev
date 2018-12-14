@@ -429,9 +429,9 @@ After reboot open terminal and in first tab run `roscore`. Press `CTRL + SHIFT +
     $ rosrun rosserial_python serial_node.py _port:=/dev/ttyS1 _baud:=115200
 ```
 
-This application forwards your MBED messages to rest of ROS. 
+This will forward your MBED messages to rest of ROS. 
 
-Run in next tab to see communication on "mbed_device" topic:
+To view communication on "mbed_device" topic open new termina and run:
 ```bash
     $ rostopic echo mbed_device
 ```
@@ -448,7 +448,7 @@ Like in previous example create a new project and name it `subscriber-example`.
 
 #### The code
 
-The example creates two topics - "raw_input" for user to send short String messages to be encrypted by [AES-ECB](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) block cipher and "encrypted_output" for user to collect encrypted messages (byte array). 
+The example creates two topics - "raw_input" for user to send short String messages to be encrypted by [AES-ECB](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) block cipher and "encrypted_output" for user to collect encrypted messages.
 
 ```cpp
 /*
@@ -571,9 +571,17 @@ To publish new message to "input_raw" topic open a new tab and run:
     $ rostopic pub std_msgs/String "Hello World!" --once
 ```
 
-<!-- image -->
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img12.png" width="800px" alt=""/></center> 
+</div>
 
-If you want to learn more - check official [rosserial mbed tutorials]() from ros.org. 
+You can use sites like http://aes.online-domain-tools.com/ to decrypt your message and check if encryption works.
+
+<div>
+<center><img src="./../../../assets/img/mbed-tutorials/mbed-tutorial-img13.png" width="800px" alt=""/></center> 
+</div>
+
+If you want to learn more - check official [rosserial mbed tutorials](http://wiki.ros.org/rosserial_mbed/Tutorials) from **ros.org**. 
 
 #### Tasks
 * Create an application that monitors the on-board button and publish the number of pushes to topic "button" every time the button's state changes. Use [InterruptIn]() object. 
