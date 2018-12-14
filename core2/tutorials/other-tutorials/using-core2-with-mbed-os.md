@@ -458,7 +458,6 @@ The example creates two topics - "raw_input" for user to send short String messa
 #include <Thread.h>
 #include <ros.h> 
 #include <std_msgs/String.h>
-#include <std_msgs/UInt8MultiArray.h>
 
 // header file for AES
 #include <mbedtls/aes.h>
@@ -474,7 +473,7 @@ enum : uint8_t{
     L1 = 0b00000100,
     L2 = 0b00001000,
     L3 = 0b00010000,
-    L1L2 = 0B00001100,
+    L1L2 = 0b00001100,
     ALL = 0b00011100
 };
 
@@ -491,6 +490,7 @@ mbedtls_aes_context aes;
 const uint8_t secret_key[BLOCK_SIZE+1] = "YMZE4oIxB9M14bkF"; // 128-bit key
 uint8_t input[BLOCK_SIZE];
 uint8_t output[BLOCK_SIZE];
+char formatted_output[2*BLOCK_SIZE+1];
 
 int main()
 {
@@ -498,9 +498,9 @@ int main()
     ros_thread.start([]() -> void {
         ros::NodeHandle nh;
 
-        // the output is an array of bytes
-        std_msgs::UInt8MultiArray byte_output;
-        ros::Publisher pub("output_encrypted", &byte_output);
+        // the output will be formated string of characters
+        std_msgs::String str_output;
+        ros::Publisher pub("output_encrypted", &str_output);
         
         // We instantiate publisher object with "input_raw" topic and attach lambda style 
         // callback for subscriber event (when user sends something).
@@ -532,9 +532,15 @@ int main()
             // if message was encrypted send result to topic
             if(message_ready)
             {
-                byte_output.data = output;
-                byte_output.data_length = BLOCK_SIZE;
-                pub.publish(&byte_output);
+                int j=0;
+                // format data 
+                for(int i=0;i<BLOCK_SIZE;++i)
+                {
+                    sprintf(formatted_output+j,"%02X",*(output+i));
+                    j+=2;
+                }
+                str_output.data = formatted_output;
+                pub.publish(&str_output);
                 message_ready = false;
             }
             nh.spinOnce();
@@ -560,7 +566,7 @@ More about API used:
 
 On your SBC open a terminal and in separate tabs start `roscore` and `rosrun rosserial_python serial_node.py` bridge with the same parameters like in the previous example. 
 
-To receive encrypted messages, in new tab run:
+To receive encrypted messages, in a new tab run:
 ```bash
     $ rostopic echo output_encrypted
 ```
