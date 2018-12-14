@@ -259,6 +259,22 @@ First we will create a new project directory. Just simply duplicate previous pro
     $ cp -rf core2-mbed-template example-publisher
 ```
 
+Another way is to create empty mbed project using Mbed CLI. Just type:
+```bash
+  $ mbed new <project-name> --program
+```
+After that copy content of template project except `.git` directory.
+
+> **Tip**
+>
+> If you cloned your template project from online repo and you don't want to have version control in it just delete `.git` directory:
+> ```bash
+>   $ rm -rf ./core2-mbed-template/.git/
+> ```
+> You can add it latter by running `git init .` in root dir of your project.   
+> 
+
+
 Open `example-publisher` directory in Visual Studio Code. In the program press `CTRL + ~` to open built-in terminal. In the terminal type:
 
 ```bash
@@ -356,7 +372,7 @@ If you would like to know more about mbed specific code check [Mbed API](https:/
 * [Ticker](https://os.mbed.com/docs/v5.10/apis/ticker.html),
 * [DigitalOut](https://os.mbed.com/docs/v5.10/apis/digitalout.html).
 
-> **Pro Tip**
+> **Tip**
 >
 > Good practice when learning new things is to take notes. These days it's even more relevant than ever due to our over-reliance on google. You sometimes end up searching for the same information over and over again just because you've already forgotten it. 
 > We encourage you to create "cheat sheets" when learning new programming language or framework/API. They help quickly revise and reuse code.   Create "Mbed cheat sheet" using GitHub Gist or note in Evernote. At the beginning add links to main documentation pages and another useful sites on topic. In next sections make short references to API with code snippets. It may look like this:
@@ -401,7 +417,7 @@ In terminal type:
     $ sudo shutdown -r now # it will reboot your SBC
 ```
 
-After reboot open terminal and and in first tab run `roscore`. Press `CTRL + SHIFT + T` and in second tab run:
+After reboot open terminal and in first tab run `roscore`. Press `CTRL + SHIFT + T` and in second tab run:
 
 * Raspberry PI
 ```bash
@@ -426,17 +442,150 @@ Run in next tab to see communication on "mbed_device" topic:
  
 ### Example subscriber
 
- 
+In this project we'll use both publisher and subscriber as well as some cryptographic functionality of [mbed TLS library](https://tls.mbed.org/) . Mbed TLS library include crypto and SSL/TLS capabilities with minimal footprint and easy to use API. It is available as part of Mbed OS.
 
+Like in previous example create a new project and name it `subscriber-example`.
 
-## Motors
+#### The code
+
+The example creates two topics - "raw_input" for user to send short String messages to be encrypted by [AES-ECB](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) block cipher and "encrypted_output" for user to collect encrypted messages (byte array). 
+
+```cpp
+/*
+ * main.cpp
+ */
+#include <mbed.h>
+#include <Thread.h>
+#include <ros.h> 
+#include <std_msgs/String.h>
+#include <std_msgs/UInt8MultiArray.h>
+
+// header file for AES
+#include <mbedtls/aes.h>
+#define BLOCK_SIZE 16
+
+// LED1 = PE_2, 
+// LED2 = PE_3, 
+// LED3 = PE_4,
+
+// Port masks
+enum : uint8_t{
+    NONE = 0,
+    L1 = 0b00000100,
+    L2 = 0b00001000,
+    L3 = 0b00010000,
+    L1L2 = 0B00001100,
+    ALL = 0b00011100
+};
+
+uint8_t masks[] = {NONE,L1,L1L2,ALL};
+
+// Controls port E
+PortOut leds(PortE,ALL);
+
+Thread ros_thread;
+volatile bool message_ready = false;
+
+// variables required for AES encryption ECB mode
+mbedtls_aes_context aes;
+const uint8_t secret_key[BLOCK_SIZE+1] = "YMZE4oIxB9M14bkF"; // 128-bit key
+uint8_t input[BLOCK_SIZE];
+uint8_t output[BLOCK_SIZE];
+
+int main()
+{
+    // We use lambda style callback for registering a ros task
+    ros_thread.start([]() -> void {
+        ros::NodeHandle nh;
+
+        // the output is an array of bytes
+        std_msgs::UInt8MultiArray byte_output;
+        ros::Publisher pub("output_encrypted", &byte_output);
+        
+        // We instantiate publisher object with "input_raw" topic and attach lambda style 
+        // callback for subscriber event (when user sends something).
+        ros::Subscriber<std_msgs::String> sub("input_raw", [](const std_msgs::String& raw)-> void{
+            // check if length <= 16
+            int n = strlen(raw.data);
+            if(n == 0 || n > 16)
+                return;
+            memcpy(input,raw.data,n);
+            // zero padding
+            for(int i = n; i<BLOCK_SIZE; ++i)
+                input[i] = 0;
+
+            // encrypt message     
+            mbedtls_aes_crypt_ecb(&aes,MBEDTLS_AES_ENCRYPT,input,output);
+            message_ready = true;
+        });
+
+        nh.initNode();
+        nh.advertise(pub);
+        
+        // subscribe to topic 
+        nh.subscribe(sub);
+        
+        // set aes key
+        mbedtls_aes_setkey_enc( &aes, secret_key, 128);
+        while(1)
+        {
+            // if message was encrypted send result to topic
+            if(message_ready)
+            {
+                byte_output.data = output;
+                byte_output.data_length = BLOCK_SIZE;
+                pub.publish(&byte_output);
+                message_ready = false;
+            }
+            nh.spinOnce();
+            ThisThread::sleep_for(50);
+        }
+    });
+
+    int i = 0, n = sizeof(masks);
+    while(1)
+    {
+        leds = masks[i%n];
+        i++;
+        ThisThread::sleep_for(500);
+    }
+}
+```
+
+More about API used:
+* [PortOut](https://os.mbed.com/docs/v5.10/apis/portout.html),
+* [mbedtls_aes_crypt_ecb()](https://tls.mbed.org/api/aes_8h.html#a0e59fdda18a145e702984268b9ab291a).
+
+#### Running the code
+
+On your SBC open a terminal and in separate tabs start `roscore` and `rosrun rosserial_python serial_node.py` bridge with the same parameters like in the previous example. 
+
+To receive encrypted messages, in new tab run:
+```bash
+    $ rostopic echo output_encrypted
+```
+
+To publish new message to "input_raw" topic open a new tab and run:
+
+```bash
+    $ rostopic pub std_msgs/String "Hello World!" --once
+```
+
+<!-- image -->
+
+If you want to learn more - check official [rosserial mbed tutorials]() from ros.org. 
+
+#### Tasks
+* Create an application that monitors the on-board button and publish the number of pushes to topic "button" every time the button's state changes. Use [InterruptIn]() object. 
+* Create an application that lights up on-board leds accordingly to the mask value received on "led_mask" topic. Use `std_msgs::Uint8` type for ROS communication.
+
+<!-- TODO: MOTOR SECTION -->
 
 ## Summary
 
 After completing this tutorial you should know the basics of Mbed OS 
 components and tools. You should be able to create, compile and run mbed 
-applications on CORE2 and you should have the basic idea how to establish ROS communication
-between mbed program and SBC using Rosserial library.
+applications on CORE2 and use Rosserial library to incorporate your mbed platform into ROS projects.
 
 ---------
 
